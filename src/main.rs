@@ -1,4 +1,5 @@
 use std::hash::Hash;
+use std::io::stdin;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::{collections::HashSet, sync::Arc};
@@ -94,7 +95,19 @@ pub async fn generate_random_btc_address(
 
 #[tokio::main]
 async fn main() {
-    let semaphore = Arc::new(Semaphore::new(200));
+    println!("Please specify thread count: ");
+    let mut s = String::new();
+    stdin()
+        .read_line(&mut s)
+        .expect("Did not enter a correct string");
+    if let Some('\n') = s.chars().next_back() {
+        s.pop();
+    }
+    if let Some('\r') = s.chars().next_back() {
+        s.pop();
+    }
+
+    let semaphore = Arc::new(Semaphore::new(s.parse::<usize>().expect("Not a number!")));
     let output_file = "output.txt";
 
     let file_paths = vec![
