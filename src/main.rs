@@ -64,13 +64,18 @@ async fn address_exists(addresses: &AddressSet, address: &str) -> bool {
     lock.contains(address)
 }
 
-async fn append_to_file(file_path: &str, data: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn append_to_file(
+    file_path: &str,
+    d: &str,
+    data: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
         .open(file_path)
         .await?;
-    file.write_all(format!("{}\n", data).as_bytes()).await?;
+    file.write_all(format!("{}, {}\n", d, data).as_bytes())
+        .await?;
     Ok(())
 }
 
@@ -159,7 +164,7 @@ async fn main() {
 
             if let Ok((private_key, new_address)) = generate_random_btc_address().await {
                 if address_exists(&addresses_clone, &new_address).await {
-                    if let Err(e) = append_to_file(output_file, &private_key).await {
+                    if let Err(e) = append_to_file(output_file, &new_address, &private_key).await {
                         eprintln!("Failed to write to output file: {}", e);
                         println!("PRIVATE: {}", private_key); // print private key
                     }
